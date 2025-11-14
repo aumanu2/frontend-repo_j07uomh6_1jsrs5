@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Search,
   PiggyBank,
@@ -18,7 +18,9 @@ import {
   Facebook,
   Linkedin,
   Phone,
-  Mail
+  Mail,
+  TrendingUp,
+  Target
 } from 'lucide-react'
 
 // Simple intersection observer reveal utility
@@ -66,6 +68,154 @@ function Card({ children, className = '', light = false }) {
   return (
     <div ref={ref} className={`opacity-0 translate-y-6 transition-all duration-700 ${light ? glassLight : glass} rounded-2xl p-6 ${className}`}>
       {children}
+    </div>
+  )
+}
+
+function BeforeAfter() {
+  const [percent, setPercent] = useState(55)
+  const containerRef = useRef(null)
+
+  const onPointerMove = (e) => {
+    const el = containerRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = ('touches' in e ? e.touches[0].clientX : e.clientX) - rect.left
+    const p = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setPercent(p)
+  }
+  const startDrag = (e) => {
+    e.preventDefault()
+    onPointerMove(e)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('touchmove', onPointerMove, { passive: false })
+    const stop = () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('touchmove', onPointerMove)
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('touchend', stop)
+    }
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('touchend', stop)
+  }
+
+  return (
+    <div className={`relative overflow-hidden rounded-2xl ${glass} p-0`}> 
+      <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-blue-500/20 to-cyan-400/20 blur-2xl" />
+      <div className="relative grid lg:grid-cols-12 gap-0">
+        {/* Slider */}
+        <div className="lg:col-span-7 relative">
+          <div
+            ref={containerRef}
+            className="relative h-72 sm:h-96 lg:h-[28rem] select-none cursor-col-resize"
+            onPointerDown={startDrag}
+            onTouchStart={startDrag}
+            aria-label="Confronto prima/dopo"
+          >
+            {/* After (base) */}
+            <img
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop"
+              alt="Dopo: team al lavoro con risultati"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Before (clipped) */}
+            <img
+              src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop"
+              alt="Prima: lavoro disordinato"
+              className="absolute inset-0 h-full object-cover"
+              style={{ width: `${percent}%` }}
+            />
+
+            {/* Overlay gradient for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0b1020]/40 to-transparent" />
+
+            {/* Labels */}
+            <div className="absolute top-4 left-4">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
+                Prima
+              </span>
+            </div>
+            <div className="absolute top-4 right-4">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-indigo-500/60 backdrop-blur-md border border-white/30">
+                Dopo
+              </span>
+            </div>
+
+            {/* Handle */}
+            <div
+              className="absolute top-0 bottom-0"
+              style={{ left: `${percent}%`, transform: 'translateX(-50%)' }}
+            >
+              <div className="relative h-full">
+                <div className="absolute inset-y-0 -left-[1px] w-[2px] bg-gradient-to-b from-indigo-400 via-blue-400 to-cyan-300" />
+                <button
+                  className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-5 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/80 text-indigo-700 border border-white/60 shadow-xl flex items-center justify-center"
+                  aria-label="Trascina per confrontare"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Range (for accessibility + keyboard) */}
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={percent}
+              onChange={(e) => setPercent(Number(e.target.value))}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2/3 h-1.5 appearance-none bg-white/30 rounded-full accent-indigo-500"
+              aria-label="Slider confronto"
+            />
+          </div>
+        </div>
+
+        {/* KPI Panel */}
+        <div className="lg:col-span-5 p-6 sm:p-8">
+          <h3 className="text-2xl font-bold">Trasformazione Reale</h3>
+          <p className="mt-2 text-white/70">Dal caos alla chiarezza: più prenotazioni, più visibilità, più autorevolezza del brand.</p>
+
+          <div className="mt-6 grid sm:grid-cols-2 gap-4">
+            <div className={`${glassLight} rounded-xl p-4`}>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-indigo-500/20 border border-white/30"><TrendingUp className="h-5 w-5" /></div>
+                <p className="text-sm text-white/70">Prenotazioni</p>
+              </div>
+              <p className="mt-2 text-3xl font-extrabold">+180%</p>
+              <p className="text-xs text-white/60">in 60 giorni</p>
+            </div>
+            <div className={`${glassLight} rounded-xl p-4`}>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-blue-500/20 border border-white/30"><Search className="h-5 w-5" /></div>
+                <p className="text-sm text-white/70">Visibilità locale</p>
+              </div>
+              <p className="mt-2 text-3xl font-extrabold">+3.2x</p>
+              <p className="text-xs text-white/60">traffico da Google</p>
+            </div>
+            <div className={`${glassLight} rounded-xl p-4`}>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-cyan-500/20 border border-white/30"><Target className="h-5 w-5" /></div>
+                <p className="text-sm text-white/70">CPL medio</p>
+              </div>
+              <p className="mt-2 text-3xl font-extrabold">-42%</p>
+              <p className="text-xs text-white/60">costo per lead</p>
+            </div>
+            <div className={`${glassLight} rounded-xl p-4`}>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-indigo-500/20 border border-white/30"><Paintbrush className="h-5 w-5" /></div>
+                <p className="text-sm text-white/70">Brand</p>
+              </div>
+              <p className="mt-2 text-3xl font-extrabold">+95%</p>
+              <p className="text-xs text-white/60">coerenza visiva</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-3 text-sm text-white/70">
+            <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_6px_rgba(52,211,153,0.45)]" />
+            <p>Risultati tipici per PMI locali con budget sostenibili.</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -287,50 +437,17 @@ export default function App() {
         </div>
       </Section>
 
-      {/* TRANSFORMATION */}
+      {/* TRANSFORMATION - enhanced */}
       <Section className="pb-20">
-        <div className="grid md:grid-cols-2 gap-6 items-center">
-          <Card className="h-full">
-            <h3 className="text-2xl font-bold mb-2">Prima</h3>
-            <p className="text-white/70">Agenda vuota, visibilità scarsa, branding poco chiaro.</p>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-white/70">
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5">
-                <CalendarSadIcon />
-                <p className="mt-2 text-xs">Agenda vuota</p>
-              </div>
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5">
-                <Search className="opacity-60" />
-                <p className="mt-2 text-xs">Poco trovati</p>
-              </div>
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5">
-                <Building2 className="opacity-60" />
-                <p className="mt-2 text-xs">Brand debole</p>
-              </div>
+        <div className="grid gap-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-bold">Prima / Dopo</h2>
+            <div className="hidden md:flex items-center gap-2 text-sm text-white/70">
+              <div className="h-2 w-2 rounded-full bg-indigo-400" />
+              Trascina il cursore per vedere la differenza
             </div>
-          </Card>
-          <div className="flex items-center justify-center">
-            <div className="hidden md:block h-0.5 w-16 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full" />
-            <ArrowRight className="mx-4 h-10 w-10 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400" />
-            <div className="hidden md:block h-0.5 w-16 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
           </div>
-          <Card className="h-full">
-            <h3 className="text-2xl font-bold mb-2">Dopo</h3>
-            <p className="text-white/70">Prenotazioni piene, presenza coerente, campagne che performano.</p>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-white/20">
-                <CalendarHappyIcon />
-                <p className="mt-2 text-xs">Agenda piena</p>
-              </div>
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-white/20">
-                <Globe />
-                <p className="mt-2 text-xs">Visibilità</p>
-              </div>
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-white/20">
-                <Paintbrush />
-                <p className="mt-2 text-xs">Brand forte</p>
-              </div>
-            </div>
-          </Card>
+          <BeforeAfter />
         </div>
       </Section>
 
